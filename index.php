@@ -11,18 +11,54 @@ function getBooksLinksFromPage($url)
     $html = file_get_html($url);
     foreach($html->find('a.elementor-post__thumbnail__link') as $link){
         // echo $link->href . PHP_EOL;
-        savePdfFile($link->href);
+        getPdfLinks($link->href);
+        break;
     }
 }
 
-function savePdfFile($url)
+function getPdfLinks($url)
 {
     $html = file_get_html($url);
+    $bookTitle = $html->find('h1.elementor-heading-title', 0)->plaintext;
+
     foreach($html->find('a.elementor-button') as $link){
         if (pathinfo($link->href , PATHINFO_EXTENSION) == 'pdf') {
-            echo $link->href . PHP_EOL;
+            savePdfToFolder($link->href, $bookTitle);
         }
     }
+}
+
+function savePdfToFolder($pdfUrl, $bookTitle)
+{
+    $language = defineLanguage($pdfUrl);
+    $file_content = file_get_contents($pdfUrl);
+    $file_destination = defineFileDestination($language, $file_content);
+
+
+
+    // file_put_contents($file_destination,$file_content);
+    // var_dump($pdfUrl);
+
+}
+
+function defineLanguage($url)
+{
+    $german = 'German';
+    $english = 'English';
+    if(str_contains($url, $german)){
+        return 'german';
+    } else if (str_contains($url, $english)){
+        return 'english';
+    } else {
+        return null;
+    }
+}
+
+function defineFileDestination($bookTitle)
+{
+    $destibation = '';
+
+    return $destibation;
 }
 
 function getAllLinksFromPagination($url)

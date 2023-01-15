@@ -10,9 +10,7 @@ function getBooksLinksFromPage($url)
 {
     $html = file_get_html($url);
     foreach($html->find('a.elementor-post__thumbnail__link') as $link){
-        // echo $link->href . PHP_EOL;
         getPdfLinks($link->href);
-        break;
     }
 }
 
@@ -31,14 +29,14 @@ function getPdfLinks($url)
 function savePdfToFolder($pdfUrl, $bookTitle)
 {
     $language = defineLanguage($pdfUrl);
-    $file_content = file_get_contents($pdfUrl);
-    $file_destination = defineFileDestination($language, $file_content);
-
-
-
-    // file_put_contents($file_destination,$file_content);
-    // var_dump($pdfUrl);
-
+    $file_destination = '';
+    if($language !== ''){
+        ini_set('memory_limit', '-1');
+        $file_content = file_get_contents($pdfUrl);
+        $file_destination = defineFileDestination($language, $bookTitle);
+        file_put_contents($file_destination,$file_content);
+        unset($file_content);
+    }
 }
 
 function defineLanguage($url)
@@ -50,14 +48,18 @@ function defineLanguage($url)
     } else if (str_contains($url, $english)){
         return 'english';
     } else {
-        return null;
+        return "";
     }
 }
 
-function defineFileDestination($bookTitle)
+function defineFileDestination($directoryName, $bookTitle)
 {
     $destibation = '';
-
+    $folder = "data/uploads/books/";
+    if (!file_exists($folder . $directoryName)) {
+        mkdir($folder . $directoryName, 0777, true);
+    }
+    $destibation = $folder . $directoryName . "/" . $bookTitle . ".pdf";
     return $destibation;
 }
 
@@ -73,13 +75,12 @@ function getAllLinksFromPagination($url)
         }
     }
     array_pop($arr);
+    unset($html);
     return $arr;
 }
 
 $array_links = getAllLinksFromPagination($url);
-// print("<pre>".print_r($array_links,true)."</pre>");
 
 foreach($array_links as $link){
     getBooksLinksFromPage($link);
 }
-
